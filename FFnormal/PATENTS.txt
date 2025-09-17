@@ -1,0 +1,32 @@
+专利声明 / Patent Statement
+
+1. 专利信息 / Patent Information
+中国专利申请号 / Chinese Patent Application No.: CN2025104883242
+发明名称：一种对批量数据基于动态焦点的约束归一稀疏化方法和系统
+Title: Method and System for Constrained Normalization and Sparsification of Batch Data Based on Dynamic Focus Points
+申请日 / Filing Date: 2025年4月18日 / April 18, 2025
+
+2. 实施条款 / Implementation Terms
+非商业许可：个人、学术研究及非营利实体可免费实施本专利技术，不得用于商业行为
+Non-Commercial License: Free use is permitted for individuals, academic research and non-profit entities, but shall not be used for commercial activities
+
+3. 限制条款 / License Limitations
+若被许可方对专利权人及其关联实体提起专利侵权诉讼，本授权将自动终止
+This license shall terminate automatically if the licensee initiates patent infringement litigation against the patent holder or its affiliated entities.
+
+4. 免责声明 / Disclaimer
+本声明不构成法律意见，使用者应自行开展知识产权合规审查及风险评估
+This statement does not constitute legal advice. Users shall conduct independent intellectual property compliance reviews and risk assessments.
+
+5. 联系方式 / Contact Information
+电子邮箱 / Email: f.f.l.y@hotmail.com; f.f.l.y@163.com
+
+6. 适用法律 / Governing Law
+本专利适用中华人民共和国法律
+This statement shall be governed by and construed in accordance with the laws of the People's Republic of China.
+
+7. 争议解决 / Dispute Resolution
+争议应优先通过友好协商解决；协商未果时，提交上海国际经济贸易仲裁委员会（SHIAC）按其仲裁规则进行仲裁。仲裁地为上海，裁决具有终局性。
+Disputes shall first be resolved through amicable consultation. If no resolution is reached, the case shall be submitted to the Shanghai International Economic and Trade Arbitration Commission (SHIAC) for arbitration in Shanghai in accordance with its rules. The arbitral award shall be final.
+
+更新日期 / Last Updated: 2025年4月18日 / April 22, 2025
