@@ -42,8 +42,9 @@ agent.txt 用于沟通与执行的指令与记录，统一策略与参数
 - SVPWM/generate_dataset.py: 采样与标签生成(支持并行)
 - SVPWM/plot_dataset.py: 覆盖度与分布可视化
 - SVPWM/plot_uvw.py: 固定 d、q 扫描电子角度，绘制 uvw 曲线
+- SVPWM/train.py: FFtrainer 训练脚本
 
 执行步骤
 - 实现 svpwmlib.py 的扇区判定与占空比计算
 - 实现 generate_dataset.py，生成 npy 文件（含 T0/T1/T2 分组）
-- 模型训练暂不实现
+- 实现 train.py，支持 SVPWM 数据集训练

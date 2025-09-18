@@ -397,7 +397,7 @@ class FFlinear(nn.Module):
         self.activation = activation
         self.regularizer = None  # Add regularizer attribute for DeepXDE compatibility
         
-        if ff_num is None:
+        if ff_num is None or ff_num == 0:
             # Use standard fc if no focus points specified
             self.net = self._create_fc(layer_size, activation, initializer)
         else:
@@ -479,6 +479,7 @@ class FFlinear(nn.Module):
             ff_outputs = [self.ff_normal_layers[i](x[:, i:i+1]) for i in range(x.shape[1])]
             # Concatenate outputs
             y = torch.cat(ff_outputs, dim=1)
+            # y = torch.softmax(y, dim=-1)
             return self.remaining_net(y)
     
     def print_init_points(self):

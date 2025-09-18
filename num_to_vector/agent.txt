@@ -1,0 +1,37 @@
+agent.txt 用于沟通与执行的指令与记录，统一策略与参数
+
+分割要求:
+- 段落以空行分隔
+- 键值对使用"键: 值"，冒号后保留一个空格
+- 列表项以"- "开头
+- 不使用制表符，仅空格
+- 单位或归一化需在"说明:"中明确
+
+目标
+- 将数值(或多维特征)映射为向量(soft assignment to anchors)，并提供可逆近似复原
+
+数据与范围
+- 输入: x ∈ [-1,1] 或 x ∈ [-1,1]^D (float32)
+- 输出: s ∈ [0,1]^(D*K) 行归一化；锚点 p ∈ R^(D×K)
+- 说明: 若具有周期/回环性质，使用 wrap 参数(如 wrap=2.0 对应[-1,1])
+
+锚点与向量化
+- 锚点策略: 分位点(quantile)法，按样本的经验分布自适应生成
+- 锚点数量: K = floor((2*ff_num+1 - 1)/ff_stride)，取索引 2,4,...,2*ff_num
+- 向量化: 对每维 d，计算与 p_d 的距离，经高斯核得相似度并归一化
+- wrap处理: 使用最短弧长距离 min(|Δ|, wrap - |Δ|)
+
+复原(逆映射)
+- 非周期: x̂_d = softmax 权重对 p_d 的加权和
+- 周期: 将 p_d → 单位圆(2π·p_d/wrap)，对 cos/sin 加权合成，反算角度
+- 可选校正: 在线性复原基础上增加一层线性/小型 MLP 校正
+
+脚本与文件
+- num_to_vector/ntvlib.py: 编码(num_to_vec)与复原(vec_to_num)核心函数
+- num_to_vector/demo.py: 演示脚本，生成样例、打印结果与误差
+- num_to_vector/__init__.py: 包导出
+
+执行步骤
+- 使用 ntvlib.num_to_vec 获取 (s, p)
+- 使用 ntvlib.vec_to_num 进行复原，并评估误差
+- 按数据分布调整 ff_num、ff_stride、ff_scale 与 wrap
