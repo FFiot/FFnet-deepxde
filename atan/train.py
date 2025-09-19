@@ -61,11 +61,7 @@ class trainer(FFtrainer):
         self.X = data["X"].astype(np.float32)  # [a, b] range [-1,1]
         self.Angle = data["Y"].astype(np.float32)  # [angle] normalized to [-1,1]
 
-        outdim = kwargs.get('outdim', 10)
-        self.Y, self.Angle_point = num_to_vec(self.Angle, outdim, 1, 1.0, 2.0)
-
-        p = self.Y * self.Angle_point
-        p = np.sum(p, axis=-1, keepdims=-1)
+        self.Y = np.concatenate([np.sin(np.pi * self.Angle), np.cos(np.pi * self.Angle)], axis=1)
 
         # 训练角度预测，输入是 X，使用原始数据集
         data_train = torch.tensor(self.X, dtype=torch.float32)
@@ -85,10 +81,9 @@ class trainer(FFtrainer):
         activations = kwargs.get('activations', 'relu')
         
         ff_num=kwargs.get('ff_num', None)
-        outdim = kwargs.get('outdim', 10)
 
-        # Build layer size: input 2D -> hidden -> output 1D (角度预测)
-        layer_size = [2] + [hidden_widths] * hidden_layers + [outdim]
+        # Build layer size: input 2D -> hidden -> 2D (角度预测, 正弦余弦编码)
+        layer_size = [2] + [hidden_widths] * hidden_layers + [2]
         if ff_num is None:
             net = FFlinear(layer_size, activations, "Glorot uniform")
         else:
@@ -133,20 +128,32 @@ class trainer(FFtrainer):
         x, y, p = x.cpu().numpy(), y.cpu().numpy(), p.cpu().numpy()
         loss = loss.cpu().numpy()
 
-        loss = np.mean(loss)
+        # Convert predicted sin/cos back to angle
+        # p[:, 0] is sin, p[:, 1] is cos, so atan2(sin, cos) gives the angle
+        predicted_angle = np.arctan2(p[:, 0:1], p[:, 1:2]) / np.pi
+        
+        # Calculate angle loss using predicted angles
+        angle_loss = np.square(self.Angle - predicted_angle)
+        loss = np.mean(angle_loss)
         self.add_epoch_log('Loss/val', round(loss, 8), epoch)
 
-        rse = np.square(y - p) / (np.square(y) + 1e-3)
+        # Calculate RMSE using predicted angles
+        rse = np.square(self.Angle - predicted_angle) / (np.square(self.Angle) + 1e-3)
         rse = np.sum(rse, axis=-1)
         rmse = rse.mean()
         self.add_epoch_log('Meter/RMSE/val', rmse, epoch)
         
         if epoch % 10 == 0:
+            # Convert ground truth and predicted sin/cos back to angles
+            # y[:, 0] is sin, y[:, 1] is cos, so atan2(sin, cos) gives the angle
+            gt_angle = np.arctan2(y[:, 0:1], y[:, 1:2]) / np.pi
+            pred_angle = np.arctan2(p[:, 0:1], p[:, 1:2]) / np.pi
+            
             # Save x, y, p to npy file with epoch number
             results = {
                 "x": x.astype(np.float32),  # input [a, b]
-                "y": y.astype(np.float32),  # ground truth angle (normalized)
-                "p": p.astype(np.float32)   # predicted angle (normalized)
+                "y": gt_angle.astype(np.float32),  # ground truth angle (normalized)
+                "p": pred_angle.astype(np.float32)   # predicted angle (normalized)
             }
             filename = f"atan/train_results/epoch_{epoch:04d}.npy"
             np.save(filename, results)
@@ -183,12 +190,11 @@ if __name__ == "__main__":
     
     parser.add_argument('--model_name', type=str, default='FFlinear', help='Name of the model')
     parser.add_argument('--dataset_name', type=str, default='atan-angle', help='Name of the dataset')
-    parser.add_argument('--hidden_layers', type=int, default=2, help='Number of hidden layers (>=0, 0 or None means no hidden layers)')
+    parser.add_argument('--hidden_layers', type=int, default=0, help='Number of hidden layers (>=0, 0 or None means no hidden layers)')
     parser.add_argument('--hidden_widths', type=int, default=32, help='Width of hidden layers (must be >= 1)')
-    parser.add_argument('--outdim', type=int, default=2, help='Output dimension of the model')
-    parser.add_argument('--activations', type=str, default='relu', choices=['relu', 'tanh', 'leakyrelu', 'swish'], help='Activation functions')
+    parser.add_argument('--activations', type=str, default='tanh', choices=['relu', 'tanh', 'leakyrelu', 'swish'], help='Activation functions')
     
-    parser.add_argument('--ff_num', type=int, default=16, help='Number of FF layers (None for pure FC)')
+    parser.add_argument('--ff_num', type=int, default=8, help='Number of FF layers (None for pure FC)')
     parser.add_argument('--ff_radius', type=int, default=0, help='FF radius parameter (must be >= 0 or None)')
     parser.add_argument('--ff_intensity', type=float, default=0.8, help='FF intensity parameter (greater than 1/ff_num and less than or equal to 0.95)')
 

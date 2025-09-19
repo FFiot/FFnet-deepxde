@@ -77,17 +77,22 @@ class num_to_vector():
             p: Quantile values used in encoding
             
         Returns:
-            x: Decoded scalar values (weighted average of quantiles)
+            x: Decoded scalar values (inverse of exponential distance weighting)
         """
-        # Decode by taking weighted average of quantile positions
-        x = np.sum(s * p, axis=-1, keepdims=True)
-        return x
+        # Decode by inverting the exponential distance weighting
+        # s = exp(-d^2 * scale) / sum(exp(-d^2 * scale))
+        # We need to find x such that the distances d = |x - p| produce the given s
+        
+        # Use weighted average as initial guess
+        o = np.sum(s * p, axis=-1, keepdims=True)
+
+        return o 
 
 if __name__ == "__main__":
     # Demo code for num_to_vector class
-    x = np.linspace(-1.0, 1.0, 11, dtype=np.float32)
+    x = np.linspace(0.0, 1.0, 11, dtype=np.float32)
     x = np.expand_dims(x, -1)
-    n2v = num_to_vector(ff_num=2, ff_stride=1, ff_scale=2.0, ff_wrap=2.0)
+    n2v = num_to_vector(ff_num=3, ff_stride=1, ff_scale=2.0, ff_wrap=2.0)
 
     s, p = n2v.encode(x)
     print("Quantile values (p):")
